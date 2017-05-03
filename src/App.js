@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import $ from 'jquery';
 import logo from './logo.svg';
 import './App.css';
-// import setGoogleAPILoadedCallback from './google_auth.js';
 
 class App extends Component {
     constructor(){
@@ -15,36 +14,8 @@ class App extends Component {
     }
 
     componentDidMount() {
-      // if (!this.state.instructors) {
-      //       setGoogleAPILoadedCallback(
-      //           (gapiSignOutHandler) => this.onGAPILoaded(gapiSignOutHandler),
-      //           (gapiAuthClickHandler) => this.onAuthorizationRequired(gapiAuthClickHandler)
-      //       );
-      // }
-
         navigator.geolocation.getCurrentPosition((l) => this.setLocation(l));
         loadData();
-    }
-
-    onAuthClick(event, gapiAuthClickHandler){
-        this.setState({auth_required: false});
-        gapiAuthClickHandler(event);
-    }
-
-    onSignOutClick(event, gapiSignOutHandler){
-        gapiSignOutHandler(event);
-    }
-
-    onAuthorizationRequired(gapiAuthClickHandler){
-        this.setState({auth_required: true});
-        var button = document.getElementById('authorize-button');
-        button.addEventListener('click', (event) => this.onAuthClick(event, gapiAuthClickHandler));
-    }
-
-    onGAPILoaded(gapiSignOutHandler) {
-        this.setState({auth_required: false});
-        var button = document.getElementById('signout-button');
-        button.addEventListener('click', (event) => this.onSignOutClick(event, gapiSignOutHandler));
     }
 
     setAddress(GEOdata) {
@@ -75,11 +46,6 @@ class App extends Component {
                 <img src={logo} className="App-logo" alt="logo" />
                 <h2>Welcome to KiteArmada</h2>
               </div>
-              {/*<div className="Auth">*/}
-                {/*{(auth_required? <button id="authorize-button">Authorize</button> :*/}
-                    {/*<button id="signout-button">Sign Out</button>*/}
-                {/*)}*/}
-              {/*</div>*/}
               <p className="Location">
                   Your location: {location_text}
               </p>
