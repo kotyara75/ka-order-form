@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Navbar, Jumbotron, Grid, Row, Panel, Form, FormGroup, ControlLabel, FormControl, Col, HelpBlock } from 'react-bootstrap';
+import { Navbar, Jumbotron, Grid, Row, Panel, Form, FormGroup, ControlLabel,
+    FormControl, Col, HelpBlock, Tab, Nav, NavItem } from 'react-bootstrap';
 import $ from 'jquery';
 import logo from './logo.svg';
 import './App.css';
@@ -110,10 +111,35 @@ class App extends Component {
                   <Row>
                       {location_panel}
                   </Row>
-                  <p className="Prompt">
-                          Please select items you want us to deliver
-                  </p>
-                  <pre id="content"></pre>
+                  <Row>
+                      <p className="Prompt">
+                              Please select items you want us to deliver
+                      </p>
+                      <Tab.Container id="products-list" defaultActiveKey="first">
+                        <Row className="clearfix">
+                          <Col sm={2}>
+                            <Nav bsStyle="pills" stacked>
+                              <NavItem eventKey="first">
+                                Tabaco
+                              </NavItem>
+                              <NavItem eventKey="second">
+                                Gentleman Set
+                              </NavItem>
+                            </Nav>
+                          </Col>
+                          <Col sm={10}>
+                            <Tab.Content animation>
+                              <Tab.Pane eventKey="first">
+                                <pre id="content"></pre>
+                              </Tab.Pane>
+                              <Tab.Pane eventKey="second">
+                                Tab 2 content
+                              </Tab.Pane>
+                            </Tab.Content>
+                          </Col>
+                        </Row>
+                      </Tab.Container>
+                  </Row>
               </Grid>
           </div>
         );
@@ -124,7 +150,6 @@ function loadData() {
       var url="https://spreadsheets.google.com/feeds/list/1GBabQ_MakwaQX0E1apd3A9HhPjNKhPYDHBf1r3uOAwo/od6/public/values?alt=json-in-script&callback=?";
       $.getJSON(url,{}, function (data) {
           if (data && data.feed.entry.length > 0) {
-            appendPre('Item, Category, Price:');
             const entries = data.feed.entry;
             for (var i = 0; i < entries.length; i++) {
               const item = entries[i];
