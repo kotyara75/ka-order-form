@@ -1,10 +1,14 @@
 import React, { Component } from 'react';
 import { Navbar, Jumbotron, Grid, Row, Panel, Form, FormGroup, ControlLabel,
-    FormControl, Col, HelpBlock, Tab, Nav, NavItem } from 'react-bootstrap';
+    FormControl, Col, HelpBlock, Accordion, InputGroup, Button, Glyphicon, ListGroup, ListGroupItem,
+    Well, ButtonGroup} from 'react-bootstrap';
 import $ from 'jquery';
 import logo from './logo.svg';
 import './App.css';
 
+var priceFormatter = new Intl.NumberFormat('en-US',
+                        { style: 'currency', currency: 'AUD',
+                          minimumFractionDigits: 2 });
 
 class App extends Component {
     constructor(){
@@ -12,13 +16,41 @@ class App extends Component {
       this.state = {
           // auth_required: false
           location: null,
-          address: 'No address found'
+          address: 'No address found',
+          items: null
       };
+    }
+
+    setItems(data){
+        if (data && data.feed.entry.length > 0) {
+            var items = {};
+            const entries = data.feed.entry;
+            for (var i = 0; i < entries.length; i++) {
+              const entry = entries[i];
+              const category = entry.gsx$category.$t;
+              const item = {
+                  name: entry.gsx$itemname.$t,
+                  price: entry.gsx$price.$t,
+                  number: 0,
+                  description: entry.gsx$description.$t
+              };
+              if (!items[category]) {
+                  items[category] = [];
+              }
+              items[category].push(item);
+            }
+            this.setState({items: items});
+        }
+    }
+
+    loadData() {
+      const url="https://spreadsheets.google.com/feeds/list/1GBabQ_MakwaQX0E1apd3A9HhPjNKhPYDHBf1r3uOAwo/od6/public/values?alt=json-in-script&callback=?";
+      $.getJSON(url,{}, (data) => this.setItems(data));
     }
 
     componentDidMount() {
         navigator.geolocation.getCurrentPosition((l) => this.setLocation(l));
-        loadData();
+        this.loadData();
     }
 
     setAddress(GEOdata) {
@@ -112,33 +144,16 @@ class App extends Component {
                       {location_panel}
                   </Row>
                   <Row>
-                      <p className="Prompt">
-                              Please select items you want us to deliver
-                      </p>
-                      <Tab.Container id="products-list" defaultActiveKey="first">
-                        <Row className="clearfix">
-                          <Col sm={2}>
-                            <Nav bsStyle="pills" stacked>
-                              <NavItem eventKey="first">
-                                Tabaco
-                              </NavItem>
-                              <NavItem eventKey="second">
-                                Gentleman Set
-                              </NavItem>
-                            </Nav>
-                          </Col>
-                          <Col sm={10}>
-                            <Tab.Content animation>
-                              <Tab.Pane eventKey="first">
-                                <pre id="content"></pre>
-                              </Tab.Pane>
-                              <Tab.Pane eventKey="second">
-                                Tab 2 content
-                              </Tab.Pane>
-                            </Tab.Content>
-                          </Col>
-                        </Row>
-                      </Tab.Container>
+                      <Col sm={12} md={6}><p className="Prompt">Please select items you want us to deliver</p></Col>
+                      <Col sm={6} md={3}><p className="Prompt">Order Total: {priceFormatter.format(125.44)}</p></Col>
+                  </Row>
+                  <Row>
+                      <ItemsSelector items={this.state.items}/>
+                  </Row>
+                  <Row>
+                      <Col mdOffset={10} smOffset={5}>
+                        <Button type="submit" className="text-align: right">Proceed to payment</Button>
+                      </Col>
                   </Row>
               </Grid>
           </div>
@@ -146,26 +161,59 @@ class App extends Component {
     }
 }
 
-function loadData() {
-      var url="https://spreadsheets.google.com/feeds/list/1GBabQ_MakwaQX0E1apd3A9HhPjNKhPYDHBf1r3uOAwo/od6/public/values?alt=json-in-script&callback=?";
-      $.getJSON(url,{}, function (data) {
-          if (data && data.feed.entry.length > 0) {
-            const entries = data.feed.entry;
-            for (var i = 0; i < entries.length; i++) {
-              const item = entries[i];
-              // Print columns A to C, which correspond to indices 0 and 4.
-              appendPre(item.gsx$itemname.$t + ', ' + item.gsx$category.$t + ', ' + item.gsx$price.$t);
-            }
-          } else {
-              appendPre('No data found.');
+class ItemsSelector extends Component {
+        render() {
+          const itemsMap = this.props.items;
+          if (itemsMap) {
+            const categoryRows = Object.keys(itemsMap).map((category) => {
+
+              const items = itemsMap[category];
+              const itemRows = items.map((item) => {
+                return itemRow(item.name, item.description, item.number, item.price);
+              });
+
+              return (
+                        <Panel header={category} eventKey={category} key={category}>
+                                <Grid fluid>
+                                    {itemRows}
+                                </Grid>
+                        </Panel>
+              );
+            });
+
+            return (
+            	<Accordion>
+              		{categoryRows}
+            	</Accordion>
+          	);
           }
-      });
+          return (<p>Loading Data...</p>);
+        }
 }
 
-function appendPre(message) {
-    var pre = document.getElementById('content');
-    var textContent = document.createTextNode(message + '\n');
-    pre.appendChild(textContent);
-  }
+
+function itemRow(title, description, number, price) {
+    return (
+                            <Row key={title}>
+                                <Col sm={12} md={6}>
+                                    <p className="Item-header">{title}</p>
+                                    <p>{description}</p>
+                                </Col>
+                                <Col sm={4} md={2}>
+                                    <p className="Item-header">{priceFormatter.format(price)}</p>
+                                </Col>
+                                <Col sm={2} md={1}>
+                                    <p className="Item-header">x {number}</p>
+                                </Col>
+                                <Col sm={2} md={1}>
+                                    <p className="Item-header">{priceFormatter.format(number * price)}</p>
+                                </Col>
+                                <Col sm={4} md={2} >
+                                    <Button><Glyphicon glyph="plus" /></Button>
+                                    <Button><Glyphicon glyph="minus" /></Button>
+                                </Col>
+                            </Row>
+    );
+}
 
 export default App;

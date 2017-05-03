@@ -22,6 +22,10 @@
   font-size: large;
 }
 
+.Item-header {
+    font-size: large;
+}
+
 .Auth {
   font-size: medium;
   text-align: right;
