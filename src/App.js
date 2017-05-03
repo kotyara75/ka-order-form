@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
+import { Navbar, Jumbotron, Grid, Row, Panel, Form, FormGroup, ControlLabel, FormControl, Col, HelpBlock } from 'react-bootstrap';
 import $ from 'jquery';
 import logo from './logo.svg';
 import './App.css';
+
 
 class App extends Component {
     constructor(){
@@ -34,26 +36,85 @@ class App extends Component {
         }
     }
 
+    handleAddressChange(e) {
+        this.setState({ address: e.target.value });
+    }
+
+    validateAddress(a) {
+        const length = a.length;
+        if (length > 10) return {result: 'success', message: 'Please update delivery address if required.'};
+        else if (length > 5) return {result: 'warning', message: 'Please double check that entered address is valid.'};
+        else if (length >= 0) return {result: 'error', message: 'Please enter valid address.'};
+    }
+
     render() {
-        // const auth_required = this.state.auth_required;
         const location = this.state.location;
         const address = this.state.address;
-        const location_text = (location? address + ' (' + location.coords.latitude + ',' + location.coords.longitude +')':
-            'being determined ...');
-        return (
-          <div className="App">
-              <div className="App-header">
-                <img src={logo} className="App-logo" alt="logo" />
-                <h2>Welcome to KiteArmada</h2>
-              </div>
-              <p className="Location">
-                  Your location: {location_text}
-              </p>
-              <p className="Prompt">
-                  Please select items you want us to deliver
-              </p>
+        const address_check = this.validateAddress(address);
+        const location_title = (
+            <h3>Your Location</h3>
+        );
+        const location_panel = location ?
+            (
+                <Panel header={location_title}>
+                    <Form horizontal>
+                        <FormGroup>
+                          <Col componentClass={ControlLabel} sm={2}>Your Coordinates</Col>
+                          <Col sm={10}>
+                              <FormControl.Static>{location.coords.latitude}, {location.coords.longitude}</FormControl.Static>
+                          </Col>
+                        </FormGroup>
+                        <FormGroup controlId="formAddress" validationState={address_check.result}>
+                            <Col componentClass={ControlLabel} sm={2}>Delivery Address</Col>
+                            <Col sm={10}>
+                                <FormControl type="text" value={address}
+                                                      onChange={(e) => this.handleAddressChange(e)}/>
+                                <FormControl.Feedback />
+                                <HelpBlock>{address_check.message}</HelpBlock>
+                            </Col>
 
-              <pre id="content"></pre>
+                        </FormGroup>
+                    </Form>
+                </Panel>
+            ):
+            (
+               <Panel header={location_title}>
+                    One moment, we are locating you ...
+               </Panel>
+            );
+
+        return (
+          <div >
+              <Navbar inverse fixedTop>
+                  <Grid>
+                    <Navbar.Header>
+                      <Navbar.Brand>
+                        <a href="/">Order Delivery</a>
+                      </Navbar.Brand>
+                      <Navbar.Toggle />
+                    </Navbar.Header>
+                  </Grid>
+              </Navbar>
+              <Jumbotron className="App-jumbotron">
+                  <Grid>
+                      <Row >
+                        <img src={logo} className="App-logo" alt="logo" />
+                        <h2>Welcome to KiteArmada Convenience Shop</h2>
+                        <p>
+                            Order goods here and we will bring it to your KiteArmada accommodation.
+                        </p>
+                      </Row>
+                  </Grid>
+              </Jumbotron>
+              <Grid>
+                  <Row>
+                      {location_panel}
+                  </Row>
+                  <p className="Prompt">
+                          Please select items you want us to deliver
+                  </p>
+                  <pre id="content"></pre>
+              </Grid>
           </div>
         );
     }
