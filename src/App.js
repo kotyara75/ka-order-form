@@ -6,9 +6,17 @@ import $ from 'jquery';
 import logo from './logo.svg';
 import './App.css';
 
-var priceFormatter = new Intl.NumberFormat('en-US',
-                        { style: 'currency', currency: 'AUD',
-                          minimumFractionDigits: 2 });
+// var priceFormatter = new Intl.NumberFormat('en-US',
+//                         { style: 'currency', currency: 'AUD',
+//                           minimumFractionDigits: 2 });
+
+class numberFormat {
+    format(n){
+        return 'A$'+(Math.round(n * 100) / 100).toFixed(2)
+    }
+}
+
+var priceFormatter = new numberFormat();
 
 class App extends Component {
     constructor(){
