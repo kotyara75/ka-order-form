@@ -23,21 +23,19 @@ class App extends Component {
 
     setItems(data){
         if (data && data.feed.entry.length > 0) {
-            var items = {};
             const entries = data.feed.entry;
+            var items = {};
             for (var i = 0; i < entries.length; i++) {
               const entry = entries[i];
-              const category = entry.gsx$category.$t;
-              const item = {
+              const code = entry.gsx$itemcode.$t;
+              items[code] = {
+                  code: code,
                   name: entry.gsx$itemname.$t,
                   price: entry.gsx$price.$t,
-                  number: 0,
-                  description: entry.gsx$description.$t
+                  quantity: 0,
+                  description: entry.gsx$description.$t,
+                  category: entry.gsx$category.$t
               };
-              if (!items[category]) {
-                  items[category] = [];
-              }
-              items[category].push(item);
             }
             this.setState({items: items});
         }
@@ -159,18 +157,33 @@ class App extends Component {
           </div>
         );
     }
+
+    updateItem(item) {
+        const oitems = this.state.items;
+        const mitem = {}; mitem[item.code] = item;
+        const items = Object.assign({}, oitems, mitem);
+        this.setState({items: items});
+    }
 }
 
 class ItemsSelector extends Component {
         render() {
           const itemsMap = this.props.items;
           if (itemsMap) {
-            const categoryRows = Object.keys(itemsMap).map((category) => {
+            var groupedRows = {};
+            for(var code in itemsMap) {
+                const item = itemsMap[code];
+                const item_category = item.category;
+                const itemRow = this.itemRow(item);
+                if (groupedRows[item_category])
+                    groupedRows[item_category].push(itemRow);
+                else
+                    groupedRows[item_category] = [itemRow];
+            }
 
-              const items = itemsMap[category];
-              const itemRows = items.map((item) => {
-                return itemRow(item.name, item.description, item.number, item.price);
-              });
+            const categoryRows = Object.keys(groupedRows).map((category) => {
+
+              const itemRows = groupedRows[category];
 
               return (
                         <Panel header={category} eventKey={category} key={category}>
@@ -187,33 +200,35 @@ class ItemsSelector extends Component {
             	</Accordion>
           	);
           }
-          return (<p>Loading Data...</p>);
+          return (<Well>Loading Data...</Well>);
         }
-}
 
+        itemRow(item) {
+            const id = item.code;
+            return (
+                                    <Row key={id}>
+                                        <Col sm={12} md={6}>
+                                            <p className="Item-header">{item.title}</p>
+                                            <p>{item.description}</p>
+                                        </Col>
+                                        <Col sm={4} md={2}>
+                                            <p className="Item-header">{priceFormatter.format(item.price)}</p>
+                                        </Col>
+                                        <Col sm={2} md={1} >
+                                            <FormControl type="number" id={id} value={item.quantity}
+                                                         onChange={this.onQuantityChange}/>
+                                        </Col>
+                                        <Col sm={2} md={1}>
+                                            <p className="Item-header">{priceFormatter.format(item.quantity * item.price)}</p>
+                                        </Col>
+                                    </Row>
+            );
+        }
 
-function itemRow(title, description, number, price) {
-    return (
-                            <Row key={title}>
-                                <Col sm={12} md={6}>
-                                    <p className="Item-header">{title}</p>
-                                    <p>{description}</p>
-                                </Col>
-                                <Col sm={4} md={2}>
-                                    <p className="Item-header">{priceFormatter.format(price)}</p>
-                                </Col>
-                                <Col sm={2} md={1}>
-                                    <p className="Item-header">x {number}</p>
-                                </Col>
-                                <Col sm={2} md={1}>
-                                    <p className="Item-header">{priceFormatter.format(number * price)}</p>
-                                </Col>
-                                <Col sm={4} md={2} >
-                                    <Button><Glyphicon glyph="plus" /></Button>
-                                    <Button><Glyphicon glyph="minus" /></Button>
-                                </Col>
-                            </Row>
-    );
+        onQuantityChange(e){
+            const code = e.target.id;
+            alert(code);
+        }
 }
 
 export default App;
