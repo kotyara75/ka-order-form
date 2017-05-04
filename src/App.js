@@ -14,7 +14,6 @@ class App extends Component {
     constructor(){
       super();
       this.state = {
-          // auth_required: false
           location: null,
           address: 'No address found',
           items: null
@@ -142,11 +141,7 @@ class App extends Component {
                       {location_panel}
                   </Row>
                   <Row>
-                      <Col sm={12} md={6}><p className="Prompt">Please select items you want us to deliver</p></Col>
-                      <Col sm={6} md={3}><p className="Prompt">Order Total: {priceFormatter.format(125.44)}</p></Col>
-                  </Row>
-                  <Row>
-                      <ItemsSelector items={this.state.items}/>
+                      <ItemsSelector items={this.state.items} onUpdate={(item) => this.updateItem(item)}/>
                   </Row>
                   <Row>
                       <Col mdOffset={10} smOffset={5}>
@@ -167,68 +162,84 @@ class App extends Component {
 }
 
 class ItemsSelector extends Component {
-        render() {
-          const itemsMap = this.props.items;
-          if (itemsMap) {
-            var groupedRows = {};
-            for(var code in itemsMap) {
-                const item = itemsMap[code];
-                const item_category = item.category;
-                const itemRow = this.itemRow(item);
-                if (groupedRows[item_category])
-                    groupedRows[item_category].push(itemRow);
-                else
-                    groupedRows[item_category] = [itemRow];
-            }
+    constructor(){
+      super();
+    }
 
-            const categoryRows = Object.keys(groupedRows).map((category) => {
-
-              const itemRows = groupedRows[category];
-
-              return (
-                        <Panel header={category} eventKey={category} key={category}>
-                                <Grid fluid>
-                                    {itemRows}
-                                </Grid>
-                        </Panel>
-              );
-            });
-
-            return (
-            	<Accordion>
-              		{categoryRows}
-            	</Accordion>
-          	);
-          }
-          return (<Well>Loading Data...</Well>);
+    render() {
+      const itemsMap = this.props.items;
+      var total = 0.00;
+      if (itemsMap) {
+        var groupedRows = {};
+        for(var code in itemsMap) {
+            const item = itemsMap[code];
+            const item_category = item.category;
+            const itemRow = this.itemRow(item, this.props.onUpdate);
+            if (groupedRows[item_category])
+                groupedRows[item_category].push(itemRow);
+            else
+                groupedRows[item_category] = [itemRow];
+            total += item.price * item.quantity;
         }
 
-        itemRow(item) {
-            const id = item.code;
-            return (
-                                    <Row key={id}>
-                                        <Col sm={12} md={6}>
-                                            <p className="Item-header">{item.title}</p>
-                                            <p>{item.description}</p>
-                                        </Col>
-                                        <Col sm={4} md={2}>
-                                            <p className="Item-header">{priceFormatter.format(item.price)}</p>
-                                        </Col>
-                                        <Col sm={2} md={1} >
-                                            <FormControl type="number" id={id} value={item.quantity}
-                                                         onChange={this.onQuantityChange}/>
-                                        </Col>
-                                        <Col sm={2} md={1}>
-                                            <p className="Item-header">{priceFormatter.format(item.quantity * item.price)}</p>
-                                        </Col>
-                                    </Row>
-            );
-        }
+        const categoryRows = Object.keys(groupedRows).map((category) => {
 
-        onQuantityChange(e){
-            const code = e.target.id;
-            alert(code);
-        }
+          const itemRows = groupedRows[category];
+
+          return (
+                    <Panel header={category} eventKey={category} key={category}>
+                        <Grid fluid>
+                            {itemRows}
+                        </Grid>
+                    </Panel>
+          );
+        });
+
+        return (
+            <Grid>
+                <Row>
+                    <Col sm={12} md={6}><p className="Prompt">Please select items you want us to deliver</p></Col>
+                    <Col sm={6} md={3}><p className="Prompt">Order Total: {priceFormatter.format(total)}</p></Col>
+                </Row>
+                <Row>
+                    <Accordion>
+                        {categoryRows}
+                    </Accordion>
+                </Row>
+            </Grid>
+        );
+      }
+      return (<Well>Loading Data...</Well>);
+    }
+
+    itemRow(item, onUpdate) {
+        const id = item.code;
+        /* TODO: fix header rendering */
+        return (
+                                <Row key={id}>
+                                    <Col sm={12} md={6}>
+                                        <p className="Item-header">{item.title}</p>
+                                        <p>{item.description}</p>
+                                    </Col>
+                                    <Col sm={4} md={2}>
+                                        <p className="Item-header">{priceFormatter.format(item.price)}</p>
+                                    </Col>
+                                    <Col sm={2} md={1} >
+                                        <FormControl type="number" id={id} value={item.quantity}
+                                                     onChange={(e) => this.onQuantityChange(e, onUpdate)}/>
+                                    </Col>
+                                    <Col sm={2} md={1}>
+                                        <p className="Item-header">{priceFormatter.format(item.quantity * item.price)}</p>
+                                    </Col>
+                                </Row>
+        );
+    }
+
+    onQuantityChange(e, onUpdate){
+        const oitem = this.props.items[e.target.id];
+        const item = Object.assign({}, oitem, {quantity: e.target.value});
+        onUpdate(item);
+    }
 }
 
 export default App;
