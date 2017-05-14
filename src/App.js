@@ -5,10 +5,12 @@ import { Navbar, Jumbotron, Grid, Row, Panel, Form, FormGroup, ControlLabel,
 import $ from 'jquery';
 import logo from './logo.svg';
 import './App.css';
+import PaymentBtn from './PayPal.js';
 
 // var priceFormatter = new Intl.NumberFormat('en-US',
 //                         { style: 'currency', currency: 'AUD',
 //                           minimumFractionDigits: 2 });
+
 
 class numberFormat {
     format(n){
@@ -153,7 +155,7 @@ class App extends Component {
                   </Row>
                   <Row>
                       <Col mdOffset={10} smOffset={5}>
-                        <Button type="submit" className="text-align: right">Proceed to payment</Button>
+                        <PaymentBtn />
                       </Col>
                   </Row>
               </Grid>
