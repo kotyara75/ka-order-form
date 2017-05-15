@@ -14,10 +14,17 @@ class PaymentBtn extends Component {
     payment() {
        const env = this.props.env;
        const client = this.props.client;
+       const amount = this.props.amount;
+       const description = "The payment transaction description.";
+       const items = this.props.items;
        return window.paypal.rest.payment.create(env, client, {
            transactions: [
                {
-                   amount: {total: '1.00', currency: 'AUD'}
+                    amount: amount,
+                    description: description,
+                    item_list: {
+                       items: items
+                    }
                }
            ]
        });

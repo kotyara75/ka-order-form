@@ -161,12 +161,6 @@ class App extends Component {
                   <Row>
                       <ItemsSelector items={this.state.items} onUpdate={(item) => this.updateItem(item)}/>
                   </Row>
-                  <Row>
-                      <Col mdOffset={10} smOffset={5}>
-                        <PaymentBtn env={PayPalConf.env} style={{ size: 'responsive' }}
-                                     client={PayPalConf.client} commit={true} />
-                      </Col>
-                  </Row>
               </Grid>
           </div>
         );
@@ -187,6 +181,8 @@ class ItemsSelector extends Component {
 
     render() {
       const itemsMap = this.props.items;
+      let paymentItems = [];
+
       var total = 0.00;
       if (itemsMap) {
         var groupedRows = {};
@@ -199,6 +195,16 @@ class ItemsSelector extends Component {
             else
                 groupedRows[item_category] = [itemRow];
             total += item.price * item.quantity;
+            if (item.quantity > 0) {
+                paymentItems.push({
+                             name: item.name,
+                             description: item.description,
+                             quantity: item.quantity,
+                             price: item.price,
+                             sku: item.code,
+                             currency: "AUD"
+                });
+            }
         }
 
         const categoryRows = Object.keys(groupedRows).map((category) => {
@@ -225,6 +231,17 @@ class ItemsSelector extends Component {
                         {categoryRows}
                     </Accordion>
                 </Row>
+                <Row>
+                      <Col mdOffset={10} smOffset={5}>
+                        <PaymentBtn env={PayPalConf.env}
+                                    style={{ size: 'responsive' }}
+                                    client={PayPalConf.client}
+                                    commit={true}
+                                    amount={{total: total, currency: 'AUD'}}
+                                    items={paymentItems}
+                        />
+                      </Col>
+                  </Row>
             </Grid>
         );
       }
