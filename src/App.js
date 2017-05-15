@@ -180,6 +180,17 @@ class ItemsSelector extends Component {
     }
 
     render() {
+        const shipping_address = { // Optional
+                           recipient_name: "Brian Robinson",
+                           line1: "4th Floor",
+                           line2: "Unit #34",
+                           city: "San Jose",
+                           country_code: "US",
+                           postal_code: "95131",
+                           phone: "011862212345678",
+                           state: "CA"
+                        };
+
       const itemsMap = this.props.items;
       let paymentItems = [];
 
@@ -231,17 +242,20 @@ class ItemsSelector extends Component {
                         {categoryRows}
                     </Accordion>
                 </Row>
-                <Row>
-                      <Col mdOffset={10} smOffset={5}>
-                        <PaymentBtn env={PayPalConf.env}
-                                    style={{ size: 'responsive' }}
-                                    client={PayPalConf.client}
-                                    commit={true}
-                                    amount={{total: total, currency: 'AUD'}}
-                                    items={paymentItems}
-                        />
-                      </Col>
-                  </Row>
+                { total > 0 ? (
+                    <Row>
+                          <Col mdOffset={10} smOffset={5}>
+                            <PaymentBtn env={PayPalConf.env}
+                                        style={{ size: 'responsive' }}
+                                        client={PayPalConf.client}
+                                        commit={true}
+                                        amount={{total: total, currency: 'AUD'}}
+                                        items={paymentItems}
+                                        shipping_address={shipping_address}
+                            />
+                          </Col>
+                      </Row>
+                ): (<div/>)}
             </Grid>
         );
       }

@@ -16,14 +16,16 @@ class PaymentBtn extends Component {
        const client = this.props.client;
        const amount = this.props.amount;
        const description = "The payment transaction description.";
-       const items = this.props.items;
+       const items = this.props.items.shipping_address;
+       const shipping_address = this.props.shipping_address;
        return window.paypal.rest.payment.create(env, client, {
            transactions: [
                {
                     amount: amount,
                     description: description,
                     item_list: {
-                       items: items
+                        items: items,
+                        shipping_address: shipping_address
                     }
                }
            ]
