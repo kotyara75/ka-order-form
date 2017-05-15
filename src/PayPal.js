@@ -33,13 +33,14 @@ class PaymentBtn extends Component {
     }
 
     render() {
-        const opts = Object.assign({}, this.props);
-
         return (
             <div>
-                <ReactButton env={opts.env} style={opts.style}
-                                     client={opts.client} payment={() => this.payment()}
-                                     commit={opts.commit} onAuthorize={(data,actions) => this.onAuthorize(data,actions)} />
+                <ReactButton env={this.props.env}
+                             style={this.props.style}
+                             client={this.props.client}
+                             payment={() => this.payment()}
+                             commit={this.props.commit}
+                             onAuthorize={(data,actions) => this.onAuthorize(data,actions)} />
             </div>
         );
     }
