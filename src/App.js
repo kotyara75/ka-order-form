@@ -195,7 +195,9 @@ class App extends Component {
                   <Row>
                       <ItemsSelector items={this.state.items}
                                      parsed_address={this.state.parsed_address}
-                                     onUpdate={(item) => this.updateItem(item)}/>
+                                     onUpdate={(item) => this.updateItem(item)}
+                                     onPaymentReceived={() => this.loadData()}
+                      />
                   </Row>
               </Grid>
           </div>
@@ -280,7 +282,7 @@ class ItemsSelector extends Component {
                                         items={paymentItems}
                                         shipping_address={shipping_address}
                                         note="Please call us at 123123123 for enquires"
-                                        onPaymentRecieved={()=>this.onPaymentRecieved()}
+                                        onPaymentReceived={()=>this.onPaymentReceived()}
                             />
                           </Col>
                       </Row>
@@ -314,19 +316,11 @@ class ItemsSelector extends Component {
         );
     }
 
-    onPaymentRecieved(){
+    onPaymentReceived(){
         // Clear selected items list
-        const items = this.props.items;
-        const onUpdate = this.props.onUpdate;
-        if (items) {
-            for (var code in items) {
-                const oitem = items[code];
-                if (oitem.quantity) {
-                    const item = Object.assign({}, oitem, {quantity: 0});
-                    if (onUpdate)
-                        onUpdate(item);
-                }
-            }
+        const onPaymentReceived = this.props.onPaymentReceived;
+        if (onPaymentReceived) {
+            onPaymentReceived();
         }
         alert('Your PayPal payment received, thank you!');
     }

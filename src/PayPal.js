@@ -35,14 +35,14 @@ class PaymentBtn extends Component {
        });
     }
 
-    onPaymentRecieved() {
-        if (this.props.onPaymentRecieved)
-            this.props.onPaymentRecieved();
+    onPaymentReceived() {
+        if (this.props.onPaymentReceived)
+            this.props.onPaymentReceived();
     }
 
     onAuthorize(data, actions) {
         // Optional: display a confirmation page here
-        return actions.payment.execute().then(() => this.onPaymentRecieved());
+        return actions.payment.execute().then(() => this.onPaymentReceived());
     }
 
     render() {
