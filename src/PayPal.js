@@ -35,13 +35,14 @@ class PaymentBtn extends Component {
        });
     }
 
+    onPaymentRecieved() {
+        if (this.props.onPaymentRecieved)
+            this.props.onPaymentRecieved();
+    }
+
     onAuthorize(data, actions) {
         // Optional: display a confirmation page here
-        return actions.payment.execute().then(function () {
-            // Show a success page to the buyer
-            alert('Your PayPal payment received, thank you!');
-            // TODO: clear selected items list by reloading data
-        });
+        return actions.payment.execute().then(() => this.onPaymentRecieved());
     }
 
     render() {

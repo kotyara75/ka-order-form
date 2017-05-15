@@ -280,6 +280,7 @@ class ItemsSelector extends Component {
                                         items={paymentItems}
                                         shipping_address={shipping_address}
                                         note="Please call us at 123123123 for enquires"
+                                        onPaymentRecieved={()=>this.onPaymentRecieved()}
                             />
                           </Col>
                       </Row>
@@ -311,6 +312,23 @@ class ItemsSelector extends Component {
                                     </Col>
                                 </Row>
         );
+    }
+
+    onPaymentRecieved(){
+        // Clear selected items list
+        const items = this.props.items;
+        const onUpdate = this.props.onUpdate;
+        if (items) {
+            for (var code in items) {
+                const oitem = items[code];
+                if (oitem.quantity) {
+                    const item = Object.assign({}, oitem, {quantity: 0});
+                    if (onUpdate)
+                        onUpdate(item);
+                }
+            }
+        }
+        alert('Your PayPal payment received, thank you!');
     }
 
     onQuantityChange(e, onUpdate){
