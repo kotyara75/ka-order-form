@@ -15,7 +15,7 @@ var PayPalConf = {
     env: 'sandbox', // Optional: specify 'production' environment
     style: { size: 'responsive' },
     client: {
-        sandbox:    'AWUUZWbqdrOZ4diDulnRpRdHoNhmPSwhgWMtv3duBr5CTjzo3KwL9idrRW4hIbmJ7kSthh3GTK9ioSPa',
+        sandbox:    'Adeiy_rlEB8Jg8BrP3j1s3HG_QzO2bW0BIxxCfKU-S-EmqjJOZc2L1VOHL_jh2s_chdCjrtn5br5Gq36',
         production: 'xxxxxxxxx'
     }
 };
@@ -34,6 +34,7 @@ class App extends Component {
       this.state = {
           location: null,
           address: 'No address found',
+          parsed_address: null,
           items: null
       };
     }
@@ -68,9 +69,39 @@ class App extends Component {
         this.loadData();
     }
 
+    getGEOAddressComponent(address_components, component) {
+        return address_components.find(function (a) {
+                return a.types.find(function (t) {
+                    return t === component;
+                });
+        });
+    }
+
     setAddress(GEOdata) {
-        if (GEOdata && GEOdata.results.length > 0)
-            this.setState({address: GEOdata.results[0].formatted_address});
+        if (GEOdata && GEOdata.results.length > 0) {
+            const acs = GEOdata.results[0].address_components;
+            const street_number = this.getGEOAddressComponent(acs, 'street_number').short_name;
+            const route = this.getGEOAddressComponent(acs, 'route').long_name;
+            const locality = this.getGEOAddressComponent(acs, 'locality').long_name;
+            const region = this.getGEOAddressComponent(acs, 'administrative_area_level_1').short_name;
+            const postal_code = this.getGEOAddressComponent(acs, 'postal_code').short_name;
+            const country = this.getGEOAddressComponent(acs, 'country').short_name;
+            console.log(street_number, route, locality, region, postal_code, country);
+            this.setState({
+                address: GEOdata.results[0].formatted_address,
+                parsed_address: {
+//                    recipient_name: "Brian Robinson",
+//                     phone: "011862212345678",
+                    line1: street_number + ' ' + route,
+                    line2: '',
+                    city: locality,
+                    country_code: country,
+                    postal_code: postal_code,
+                    state: region
+                }
+            });
+        }
+
     }
 
     setLocation(l) {
@@ -78,7 +109,9 @@ class App extends Component {
             this.setState({location: l, address: '...getting your address...'});
 
             const url = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=' +
-                l.coords.latitude + ',' + l.coords.longitude + '&key=AIzaSyDGa4mgGaPfpbeIuL-VcVs6sOIuzzoQinQ';
+                l.coords.latitude + ',' + l.coords.longitude +
+                    '&result_type=street_address|locality|administrative_area_level_1|postal_code|country' +
+                '&key=AIzaSyDGa4mgGaPfpbeIuL-VcVs6sOIuzzoQinQ';
 
             $.getJSON(url, {}, (data) => this.setAddress(data));
         }
@@ -86,6 +119,7 @@ class App extends Component {
 
     handleAddressChange(e) {
         this.setState({ address: e.target.value });
+        // TODO: Parse address into the component state 'parsed_address'
     }
 
     validateAddress(a) {
@@ -159,7 +193,9 @@ class App extends Component {
                       {location_panel}
                   </Row>
                   <Row>
-                      <ItemsSelector items={this.state.items} onUpdate={(item) => this.updateItem(item)}/>
+                      <ItemsSelector items={this.state.items}
+                                     parsed_address={this.state.parsed_address}
+                                     onUpdate={(item) => this.updateItem(item)}/>
                   </Row>
               </Grid>
           </div>
@@ -180,16 +216,7 @@ class ItemsSelector extends Component {
     }
 
     render() {
-        const shipping_address = { // Optional
-                           recipient_name: "Brian Robinson",
-                           line1: "4th Floor",
-                           line2: "Unit #34",
-                           city: "San Jose",
-                           country_code: "US",
-                           postal_code: "95131",
-                           phone: "011862212345678",
-                           state: "CA"
-                        };
+        const shipping_address = this.props.parsed_address;
 
       const itemsMap = this.props.items;
       let paymentItems = [];
@@ -242,7 +269,7 @@ class ItemsSelector extends Component {
                         {categoryRows}
                     </Accordion>
                 </Row>
-                { total > 0 ? (
+                { total > 0 && shipping_address? (
                     <Row>
                           <Col mdOffset={10} smOffset={5}>
                             <PaymentBtn env={PayPalConf.env}
@@ -252,6 +279,7 @@ class ItemsSelector extends Component {
                                         amount={{total: total, currency: 'AUD'}}
                                         items={paymentItems}
                                         shipping_address={shipping_address}
+                                        note="Please call us at 123123123 for enquires"
                             />
                           </Col>
                       </Row>
