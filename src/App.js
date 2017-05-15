@@ -11,6 +11,14 @@ import PaymentBtn from './PayPal.js';
 //                         { style: 'currency', currency: 'AUD',
 //                           minimumFractionDigits: 2 });
 
+var PayPalConf = {
+    env: 'sandbox', // Optional: specify 'production' environment
+    style: { size: 'responsive' },
+    client: {
+        sandbox:    'AWUUZWbqdrOZ4diDulnRpRdHoNhmPSwhgWMtv3duBr5CTjzo3KwL9idrRW4hIbmJ7kSthh3GTK9ioSPa',
+        production: 'xxxxxxxxx'
+    }
+};
 
 class numberFormat {
     format(n){
@@ -155,7 +163,8 @@ class App extends Component {
                   </Row>
                   <Row>
                       <Col mdOffset={10} smOffset={5}>
-                        <PaymentBtn />
+                        <PaymentBtn env={PayPalConf.env} style={{ size: 'responsive' }}
+                                     client={PayPalConf.client} commit={true} />
                       </Col>
                   </Row>
               </Grid>
