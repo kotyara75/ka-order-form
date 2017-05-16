@@ -32,8 +32,6 @@ class App extends Component {
     constructor(){
       super();
       this.state = {
-          location: null,
-          address: 'No address found',
           parsed_address: null,
           items: null
       };
@@ -65,106 +63,10 @@ class App extends Component {
     }
 
     componentDidMount() {
-        navigator.geolocation.getCurrentPosition((l) => this.setLocation(l));
         this.loadData();
     }
 
-    getGEOAddressComponent(address_components, component) {
-        return address_components.find(function (a) {
-                return a.types.find(function (t) {
-                    return t === component;
-                });
-        });
-    }
-
-    setAddress(GEOdata) {
-        if (GEOdata && GEOdata.results.length > 0) {
-            const acs = GEOdata.results[0].address_components;
-            const street_number = this.getGEOAddressComponent(acs, 'street_number').short_name;
-            const route = this.getGEOAddressComponent(acs, 'route').long_name;
-            const locality = this.getGEOAddressComponent(acs, 'locality').long_name;
-            const region = this.getGEOAddressComponent(acs, 'administrative_area_level_1').short_name;
-            const postal_code = this.getGEOAddressComponent(acs, 'postal_code').short_name;
-            const country = this.getGEOAddressComponent(acs, 'country').short_name;
-            console.log(street_number, route, locality, region, postal_code, country);
-            this.setState({
-                address: GEOdata.results[0].formatted_address,
-                parsed_address: {
-//                    recipient_name: "Brian Robinson",
-//                     phone: "011862212345678",
-                    line1: street_number + ' ' + route,
-                    line2: '',
-                    city: locality,
-                    country_code: country,
-                    postal_code: postal_code,
-                    state: region
-                }
-            });
-        }
-
-    }
-
-    setLocation(l) {
-        if (l) {
-            this.setState({location: l, address: '...getting your address...'});
-
-            const url = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=' +
-                l.coords.latitude + ',' + l.coords.longitude +
-                    '&result_type=street_address|locality|administrative_area_level_1|postal_code|country' +
-                '&key=AIzaSyDGa4mgGaPfpbeIuL-VcVs6sOIuzzoQinQ';
-
-            $.getJSON(url, {}, (data) => this.setAddress(data));
-        }
-    }
-
-    handleAddressChange(e) {
-        this.setState({ address: e.target.value });
-        // TODO: Parse address into the component state 'parsed_address'
-    }
-
-    validateAddress(a) {
-        const length = a.length;
-        if (length > 10) return {result: 'success', message: 'Please update delivery address if required.'};
-        else if (length > 5) return {result: 'warning', message: 'Please double check that entered address is valid.'};
-        else if (length >= 0) return {result: 'error', message: 'Please enter valid address.'};
-    }
-
     render() {
-        const location = this.state.location;
-        const address = this.state.address;
-        const address_check = this.validateAddress(address);
-        const location_title = (
-            <h3>Your Location</h3>
-        );
-        const location_panel = location ?
-            (
-                <Panel header={location_title}>
-                    <Form horizontal>
-                        <FormGroup>
-                          <Col componentClass={ControlLabel} sm={2}>Your Coordinates</Col>
-                          <Col sm={10}>
-                              <FormControl.Static>{location.coords.latitude}, {location.coords.longitude}</FormControl.Static>
-                          </Col>
-                        </FormGroup>
-                        <FormGroup controlId="formAddress" validationState={address_check.result}>
-                            <Col componentClass={ControlLabel} sm={2}>Delivery Address</Col>
-                            <Col sm={10}>
-                                <FormControl type="text" value={address}
-                                                      onChange={(e) => this.handleAddressChange(e)}/>
-                                <FormControl.Feedback />
-                                <HelpBlock>{address_check.message}</HelpBlock>
-                            </Col>
-
-                        </FormGroup>
-                    </Form>
-                </Panel>
-            ):
-            (
-               <Panel header={location_title}>
-                    One moment, we are locating you ...
-               </Panel>
-            );
-
         return (
           <div >
               <Navbar inverse fixedTop>
@@ -190,13 +92,16 @@ class App extends Component {
               </Jumbotron>
               <Grid>
                   <Row>
-                      {location_panel}
-                  </Row>
-                  <Row>
                       <ItemsSelector items={this.state.items}
                                      parsed_address={this.state.parsed_address}
                                      onUpdate={(item) => this.updateItem(item)}
                                      onPaymentReceived={() => this.loadData()}
+                      />
+                  </Row>
+                  <Row>
+                      <AddressForm title="Delivery Address"
+                                   address={this.state.parsed_address}
+                                   onAddressChanged={(new_address) => this.setState({ parsed_address: new_address })}
                       />
                   </Row>
               </Grid>
@@ -212,6 +117,172 @@ class App extends Component {
     }
 }
 
+class AddressForm extends Component {
+    constructor(){
+        super();
+        this.state = {
+          location: null
+      };
+    }
+
+    componentDidMount() {
+        if (!this.props.address)
+            navigator.geolocation.getCurrentPosition((l) => this.setLocation(l));
+    }
+
+    setLocation(l) {
+        if (l) {
+            this.setState({location: l});
+
+            const url = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=' +
+                l.coords.latitude + ',' + l.coords.longitude +
+                    '&result_type=street_address|locality|administrative_area_level_1|postal_code|country' +
+                '&key=AIzaSyDGa4mgGaPfpbeIuL-VcVs6sOIuzzoQinQ';
+
+            $.getJSON(url, {}, (data) => this.setAddress(data));
+        }
+    }
+
+    setAddress(GEOdata) {
+        if (GEOdata && GEOdata.results.length > 0) {
+            const acs = GEOdata.results[0].address_components;
+            const street_number = this.getGEOAddressComponent(acs, 'street_number').short_name;
+            const route = this.getGEOAddressComponent(acs, 'route').long_name;
+            const locality = this.getGEOAddressComponent(acs, 'locality').long_name;
+            const region = this.getGEOAddressComponent(acs, 'administrative_area_level_1').short_name;
+            const postal_code = this.getGEOAddressComponent(acs, 'postal_code').short_name;
+            const country = this.getGEOAddressComponent(acs, 'country').short_name;
+            console.log(street_number, route, locality, region, postal_code, country);
+            if (this.props.onAddressChanged)
+                this.props.onAddressChanged(
+                    {
+    //                    recipient_name: "Brian Robinson",
+    //                     phone: "011862212345678",
+                        line1: street_number + ' ' + route,
+                        line2: '',
+                        city: locality,
+                        country_code: country,
+                        postal_code: postal_code,
+                        state: region
+                    }
+                );
+        }
+    }
+
+    getGEOAddressComponent(address_components, component) {
+        return address_components.find(function (a) {
+                return a.types.find(function (t) {
+                    return t === component;
+                });
+        });
+    }
+
+    handleAddressChange(e) {
+        const field = e.target.id;
+        const value = e.target.value;
+        const original_address = this.props.address;
+        let changed_field = {}; changed_field[field] = value;
+        const a = Object.assign({}, original_address, changed_field);
+
+        const app_handler = this.props.onAddressChanged;
+        if (app_handler) app_handler(a);
+    }
+
+    render() {
+        const location = this.state.location;
+        const address = this.props.address;
+        const address_check = validateAddress(address);
+        const location_title = (
+            <h3>{this.props.title}</h3>
+        );
+        return (
+                <Panel header={location_title}>
+                    { !location ?
+                        (<p>One moment, we are locating you</p>):
+                        (
+                        <Form horizontal>
+                            <FormGroup>
+                              <Col componentClass={ControlLabel} sm={2}>Your Coordinates</Col>
+                              <Col sm={10}>
+                                  <FormControl.Static>{location.coords.latitude}, {location.coords.longitude}</FormControl.Static>
+                              </Col>
+                            </FormGroup>
+                            { !address ?
+                                (<Well>Getting your address, it won't take long ...</Well>):
+                                (<div>
+                                    <AddressField errors={address_check} fieldId="line1" label='Address line 1'
+                                                  type="text" value={address.line1}
+                                                  onChange={(e) => this.handleAddressChange(e)} />
+                                    <AddressField errors={address_check} fieldId="line2" label='Address line 2'
+                                                  type="text" value={address.line2}
+                                                  onChange={(e) => this.handleAddressChange(e)} />
+                                    <AddressField errors={address_check} fieldId="city" label='City'
+                                                  type="text" value={address.city}
+                                                  onChange={(e) => this.handleAddressChange(e)} />
+                                    <AddressField errors={address_check} fieldId="postal_code" label='Postal code'
+                                                  type="text" value={address.postal_code}
+                                                  onChange={(e) => this.handleAddressChange(e)} />
+                                    <AddressField errors={address_check} fieldId="state" label='Region/State'
+                                                  type="text" value={address.state}
+                                                  onChange={(e) => this.handleAddressChange(e)} />
+                                    <AddressField errors={address_check} fieldId="country_code" label='Country'
+                                                  type="text" value={address.country_code}
+                                                  onChange={(e) => this.handleAddressChange(e)} />
+                                </div>)
+                            }
+                        </Form>
+                        )
+                    }
+                </Panel>
+            );
+    }
+}
+
+function getFieldState(fieldId, errors) {
+    const e = errors.find(function (t) {return t.field === fieldId});
+    return e ? e: {field: fieldId, result: null, message: null}
+}
+
+function AddressField(props) {
+    const e = getFieldState(props.fieldId, props.errors);
+    return (<FormGroup controlId={props.fieldId} validationState={e.result}>
+                <Col componentClass={ControlLabel} sm={2}>{props.label}</Col>
+                <Col sm={10}>
+                    <FormControl type={props.type} value={props.value}
+                                          onChange={props.onChange}/>
+                    <FormControl.Feedback />
+                    {e.message?(<HelpBlock>{e.message}</HelpBlock>):(<div/>)}
+                </Col>
+            </FormGroup>);
+}
+
+const _addressFieldsMeta = {
+        line1: {minLength: 10, description: 'address line'},
+        line2: {minLength: 0, description: 'address line'},
+        city: {minLength: 3, description: 'city'},
+        postal_code: {minLength: 4, description: 'postal or zip code'},
+        state: {minLength: 3, description: 'state or region name'},
+        country_code: {minLength: 2, description: 'country code'}
+    };
+
+function validateAddress(a) {
+    let errors = [];
+    if (!a) errors.push({field: 'line1', result: 'error', message: 'Please enter valid address.'});
+    else
+        for (var field in a) {
+            const c = _addressFieldsMeta[field];
+            if (c) {
+                const f = a[field];
+                const length = f.length;
+                if (length >= c.minLength && field === 'line1')
+                    errors.push({field: field, result: 'success', message: 'Please update delivery address if required.'});
+                else if (length < c.minLength)
+                    errors.push({field: field, result: 'error', message: 'Please enter valid ' + c.description + '.'});
+            }
+        }
+    return errors;
+}
+
 class ItemsSelector extends Component {
     constructor(){
       super();
@@ -219,78 +290,74 @@ class ItemsSelector extends Component {
 
     render() {
         const shipping_address = this.props.parsed_address;
+        const itemsMap = this.props.items;
+        let paymentItems = [];
+        var total = 0.00;
 
-      const itemsMap = this.props.items;
-      let paymentItems = [];
-
-      var total = 0.00;
-      if (itemsMap) {
-        var groupedRows = {};
-        for(var code in itemsMap) {
-            const item = itemsMap[code];
-            const item_category = item.category;
-            const itemRow = this.itemRow(item, this.props.onUpdate);
-            if (groupedRows[item_category])
-                groupedRows[item_category].push(itemRow);
-            else
-                groupedRows[item_category] = [itemRow];
-            total += item.price * item.quantity;
-            if (item.quantity > 0) {
-                paymentItems.push({
-                             name: item.name,
-                             description: item.description,
-                             quantity: item.quantity,
-                             price: item.price,
-                             sku: item.code,
-                             currency: "AUD"
-                });
+        if (itemsMap) {
+            var groupedRows = {};
+            for (var code in itemsMap) {
+                const item = itemsMap[code];
+                const item_category = item.category;
+                const itemRow = this.itemRow(item, this.props.onUpdate);
+                if (groupedRows[item_category])
+                    groupedRows[item_category].push(itemRow);
+                else
+                    groupedRows[item_category] = [itemRow];
+                total += item.price * item.quantity;
+                if (item.quantity > 0) {
+                    paymentItems.push({
+                        name: item.name,
+                        description: item.description,
+                        quantity: item.quantity,
+                        price: item.price,
+                        sku: item.code,
+                        currency: "AUD"
+                    });
+                }
             }
-        }
-
-        const categoryRows = Object.keys(groupedRows).map((category) => {
-
-          const itemRows = groupedRows[category];
-
-          return (
+            const categoryRows = Object.keys(groupedRows).map((category) => {
+                const itemRows = groupedRows[category];
+                return (
                     <Panel header={category} eventKey={category} key={category}>
                         <Grid fluid>
                             {itemRows}
                         </Grid>
                     </Panel>
-          );
-        });
+                );
+            });
 
-        return (
-            <Grid>
-                <Row>
-                    <Col sm={12} md={6}><p className="Prompt">Please select items you want us to deliver</p></Col>
-                    <Col sm={6} md={3}><p className="Prompt">Order Total: {priceFormatter.format(total)}</p></Col>
-                </Row>
-                <Row>
-                    <Accordion>
-                        {categoryRows}
-                    </Accordion>
-                </Row>
-                { total > 0 && shipping_address? (
+            return (
+                <Grid>
                     <Row>
-                          <Col mdOffset={10} smOffset={5}>
-                            <PaymentBtn env={PayPalConf.env}
-                                        style={{ size: 'responsive' }}
-                                        client={PayPalConf.client}
-                                        commit={true}
-                                        amount={{total: total, currency: 'AUD'}}
-                                        items={paymentItems}
-                                        shipping_address={shipping_address}
-                                        note="Please call us at 123123123 for enquires"
-                                        onPaymentReceived={()=>this.onPaymentReceived()}
-                            />
-                          </Col>
-                      </Row>
-                ): (<div/>)}
-            </Grid>
-        );
-      }
-      return (<Well>Loading Data...</Well>);
+                        <Col sm={12} md={6}><p className="Prompt">Please select items you want us to deliver</p></Col>
+                        <Col sm={6} md={3}><p className="Prompt">Order Total: {priceFormatter.format(total)}</p></Col>
+                    </Row>
+                    <Row>
+                        <Accordion>
+                            {categoryRows}
+                        </Accordion>
+                    </Row>
+                    { total > 0 && shipping_address ? (
+                        <Row>
+                            <Col mdOffset={10} smOffset={5}>
+                                <PaymentBtn env={PayPalConf.env}
+                                            style={{size: 'responsive'}}
+                                            client={PayPalConf.client}
+                                            commit={true}
+                                            amount={{total: total, currency: 'AUD'}}
+                                            items={paymentItems}
+                                            shipping_address={shipping_address}
+                                            note="Please call us at 123123123 for enquires"
+                                            onPaymentReceived={() => this.onPaymentReceived()}
+                                />
+                            </Col>
+                        </Row>
+                    ) : (<div/>)}
+                </Grid>
+            );
+        }
+        return (<Well>Loading list of available items...</Well>);
     }
 
     itemRow(item, onUpdate) {
