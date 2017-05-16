@@ -406,9 +406,11 @@ class ItemsSelector extends Component {
     }
 
     onQuantityChange(e, onUpdate){
-        const oitem = this.props.items[e.target.id];
-        const item = Object.assign({}, oitem, {quantity: e.target.value});
-        onUpdate(item);
+        if (e.target.value >= 0) {
+            const oitem = this.props.items[e.target.id];
+            const item = Object.assign({}, oitem, {quantity: e.target.value});
+            onUpdate(item);
+        }
     }
 }
 
