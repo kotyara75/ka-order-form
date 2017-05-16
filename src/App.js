@@ -348,7 +348,7 @@ class ItemsSelector extends Component {
                     <Row>
                         <Col sm={12} md={6}><p className="Prompt">Please select items you want us to deliver</p></Col>
                         <Col sm={6} md={3}><p className="Prompt">Order Total: {priceFormatter.format(total)}</p></Col>
-                        <Col sm={6} md={3}><p className="Prompt">Items Ordered: {total_items}</p></Col>
+                        <Col sm={6} md={3}><p className="Prompt">Items Selected: {total_items}</p></Col>
                     </Row>
                     <Row>
                         <Accordion>
