@@ -33,33 +33,45 @@ class App extends Component {
       super();
       this.state = {
           parsed_address: null,
-          items: null
+          items: null,
+          note_to_payer: null
       };
     }
 
     setItems(data){
-        if (data && data.feed.entry.length > 0) {
-            const entries = data.feed.entry;
+        if (data && data.records.length > 0) {
+            const entries = data.records;
             var items = {};
             for (var i = 0; i < entries.length; i++) {
               const entry = entries[i];
-              const code = entry.gsx$itemcode.$t;
+              const code = entry.Item_Code;
               items[code] = {
                   code: code,
-                  name: entry.gsx$itemname.$t,
-                  price: entry.gsx$price.$t,
+                  name: entry.Item_Name,
+                  price: entry.Price,
                   quantity: 0,
-                  description: entry.gsx$description.$t,
-                  category: entry.gsx$category.$t
+                  description: entry.Description,
+                  category: entry.Category
               };
             }
             this.setState({items: items});
         }
     }
 
+    setNote(data){
+        if (data && data.records.length > 0) {
+            this.setState({note_to_payer: data.records[0].Note_for_customer_orders_in_PayPal});
+        }
+    }
+
     loadData() {
-      const url="https://spreadsheets.google.com/feeds/list/1GBabQ_MakwaQX0E1apd3A9HhPjNKhPYDHBf1r3uOAwo/od6/public/values?alt=json-in-script&callback=?";
-      $.getJSON(url,{}, (data) => this.setItems(data));
+        const export_script_url = "https://script.google.com/macros/s/AKfycby2-FuZ2QnrS1LALJKdbUdirykN3RuBPCYgtoDb-9KhW7msZgy3/exec?callback=?";
+        const spreadsheet = "1GBabQ_MakwaQX0E1apd3A9HhPjNKhPYDHBf1r3uOAwo";
+        const goods_params = {id: spreadsheet, sheet: 'Goods'};
+        const note_params = {id: spreadsheet, sheet: 'Note'};
+//      URL https://script.google.com/macros/s/AKfycby2-FuZ2QnrS1LALJKdbUdirykN3RuBPCYgtoDb-9KhW7msZgy3/exec?id=1GBabQ_MakwaQX0E1apd3A9HhPjNKhPYDHBf1r3uOAwo&sheet=Goods&callback=?
+        $.getJSON(export_script_url,goods_params, (data) => this.setItems(data));
+        $.getJSON(export_script_url,note_params, (data) => this.setNote(data));
     }
 
     componentDidMount() {
@@ -96,6 +108,7 @@ class App extends Component {
                                      parsed_address={this.state.parsed_address}
                                      onUpdate={(item) => this.updateItem(item)}
                                      onPaymentReceived={() => this.loadData()}
+                                     note_to_payer={this.state.note_to_payer}
                       />
                   </Row>
                   <Row>
@@ -290,6 +303,7 @@ class ItemsSelector extends Component {
 
     render() {
         const shipping_address = this.props.parsed_address;
+        const note_to_payer = this.props.note_to_payer;
         const itemsMap = this.props.items;
         let paymentItems = [];
         var total = 0.00;
@@ -348,7 +362,7 @@ class ItemsSelector extends Component {
                                             amount={{total: total, currency: 'AUD'}}
                                             items={paymentItems}
                                             shipping_address={shipping_address}
-                                            note="Please call us at 123123123 for enquires"
+                                            note={note_to_payer}
                                             onPaymentReceived={() => this.onPaymentReceived()}
                                 />
                             </Col>
@@ -357,7 +371,7 @@ class ItemsSelector extends Component {
                 </Grid>
             );
         }
-        return (<Well>Loading list of available items...</Well>);
+        return (<Well>Loading available items...</Well>);
     }
 
     itemRow(item, onUpdate) {
