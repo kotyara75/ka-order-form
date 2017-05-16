@@ -307,6 +307,7 @@ class ItemsSelector extends Component {
         const itemsMap = this.props.items;
         let paymentItems = [];
         var total = 0.00;
+        var total_items = 0;
 
         if (itemsMap) {
             var groupedRows = {};
@@ -328,6 +329,7 @@ class ItemsSelector extends Component {
                         sku: item.code,
                         currency: "AUD"
                     });
+                    total_items += item.quantity;
                 }
             }
             const categoryRows = Object.keys(groupedRows).map((category) => {
@@ -346,6 +348,7 @@ class ItemsSelector extends Component {
                     <Row>
                         <Col sm={12} md={6}><p className="Prompt">Please select items you want us to deliver</p></Col>
                         <Col sm={6} md={3}><p className="Prompt">Order Total: {priceFormatter.format(total)}</p></Col>
+                        <Col sm={6} md={3}><p className="Prompt">Items Ordered: {total_items}</p></Col>
                     </Row>
                     <Row>
                         <Accordion>
@@ -406,9 +409,10 @@ class ItemsSelector extends Component {
     }
 
     onQuantityChange(e, onUpdate){
-        if (e.target.value >= 0) {
+        const q = parseInt(e.target.value);
+        if (q >= 0) {
             const oitem = this.props.items[e.target.id];
-            const item = Object.assign({}, oitem, {quantity: e.target.value});
+            const item = Object.assign({}, oitem, {quantity: q});
             onUpdate(item);
         }
     }
