@@ -376,11 +376,10 @@ class ItemsSelector extends Component {
 
     itemRow(item, onUpdate) {
         const id = item.code;
-        /* TODO: fix header rendering */
         return (
                                 <Row key={id}>
                                     <Col sm={12} md={6}>
-                                        <p className="Item-header">{item.title}</p>
+                                        <p className="Item-header">{item.name}</p>
                                         <p>{item.description}</p>
                                     </Col>
                                     <Col sm={4} md={2}>
