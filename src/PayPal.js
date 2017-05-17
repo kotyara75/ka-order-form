@@ -3,7 +3,7 @@
  */
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import paypal, {Button} from 'paypal-checkout'
+import paypal from 'paypal-checkout'
 
 const ReactButton = paypal.Button.driver('react', {
     React,

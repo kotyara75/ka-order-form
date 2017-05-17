@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { Navbar, Jumbotron, Grid, Row, Panel, Form, FormGroup, ControlLabel,
-    FormControl, Col, HelpBlock, Accordion, InputGroup, Button, Glyphicon, ListGroup, ListGroupItem,
-    Well, ButtonGroup} from 'react-bootstrap';
+    FormControl, Col, HelpBlock, Accordion, Well } from 'react-bootstrap';
 import $ from 'jquery';
 import logo from './logo.svg';
 import './App.css';
@@ -297,9 +296,6 @@ function validateAddress(a) {
 }
 
 class ItemsSelector extends Component {
-    constructor(){
-      super();
-    }
 
     render() {
         const shipping_address = this.props.parsed_address;
@@ -409,7 +405,7 @@ class ItemsSelector extends Component {
     }
 
     onQuantityChange(e, onUpdate){
-        const q = parseInt(e.target.value);
+        const q = parseInt(e.target.value,10);
         if (q >= 0) {
             const oitem = this.props.items[e.target.id];
             const item = Object.assign({}, oitem, {quantity: q});
