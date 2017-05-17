@@ -24,6 +24,6 @@
     "eject": "react-scripts eject",
     "delete-maps": "npm run delete-map-files && npm run delete-references-to-map-files",
     "delete-map-files": "find ./build -name '*.map' -delete",
-    "delete-references-to-map-files": "find ./build \\( -name *.js -o -name *.css \\) -exec sed -i '' -E 's:/[\\*\\/]#\\ sourceMappingURL=main(\\.[0-9a-f]+)?\\.(css|js)\\.map(\\*\\/)?::g' {} +"
+    "delete-references-to-map-files": "find ./build \\( -name *.js -o -name *.css \\) -exec sed -i.back -E 's:/[\\*\\/]#\\ sourceMappingURL=main(\\.[0-9a-f]+)?\\.(css|js)\\.map(\\*\\/)?::g' {} +"
   }
 }
