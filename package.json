@@ -19,7 +19,11 @@
     "postinstall": "if [ \"$NODE_ENV\" = \"production\" ]; then npm run build; fi",
     "start": "if [ -z \"$PORT\" ]; then PORT=8000; fi; if [ \"$NODE_ENV\" = \"production\" ]; then serve -s build -p $PORT; else react-scripts start; fi",
     "build": "react-scripts build",
+    "postbuild": "npm run delete-maps",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "delete-maps": "npm run delete-map-files && npm run delete-references-to-map-files",
+    "delete-map-files": "find ./build -name '*.map' -delete",
+    "delete-references-to-map-files": "find ./build \\( -name *.js -o -name *.css \\) -exec sed -i '' -E 's:/[\\*\\/]#\\ sourceMappingURL=main(\\.[0-9a-f]+)?\\.(css|js)\\.map(\\*\\/)?::g' {} +"
   }
 }
