@@ -3,9 +3,9 @@
  */
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import paypal from './../../paypal-checkout/dist/checkout.js'
+import paypal, {Button} from 'paypal-checkout'
 
-const ReactButton = window.paypal.Button.driver('react', {
+const ReactButton = paypal.Button.driver('react', {
     React,
     ReactDOM,
 });
@@ -19,7 +19,7 @@ class PaymentBtn extends Component {
        const items = this.props.items;
        const shipping_address = this.props.shipping_address;
        const note = this.props.note;
-       return window.paypal.rest.payment.create(env, client, {
+       return paypal.rest.payment.create(env, client, {
            // intent: 'order',
            transactions: [
                {

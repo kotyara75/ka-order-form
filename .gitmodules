@@ -1,0 +1,3 @@
+[submodule "lib/paypal-checkout"]
+	path = lib/paypal-checkout
+	url = https://github.com/paypal/paypal-checkout.git
