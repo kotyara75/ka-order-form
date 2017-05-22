@@ -46,7 +46,7 @@ class AddressForm extends Component {
                     {
     //                    recipient_name: "Brian Robinson",
     //                     phone: "011862212345678",
-                        line1: street_number + ' ' + route,
+                        line1: street_number + (street_number ? ' ' : '') + route,
                         line2: '',
                         city: locality,
                         country_code: country,
