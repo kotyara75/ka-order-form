@@ -34,12 +34,12 @@ class AddressForm extends Component {
     setAddress(GEOdata) {
         if (GEOdata && GEOdata.results.length > 0) {
             const acs = GEOdata.results[0].address_components;
-            const street_number = this.getGEOAddressComponent(acs, 'street_number').short_name;
-            const route = this.getGEOAddressComponent(acs, 'route').long_name;
-            const locality = this.getGEOAddressComponent(acs, 'locality').long_name;
-            const region = this.getGEOAddressComponent(acs, 'administrative_area_level_1').short_name;
-            const postal_code = this.getGEOAddressComponent(acs, 'postal_code').short_name;
-            const country = this.getGEOAddressComponent(acs, 'country').short_name;
+            const street_number = this.getGEOAddressComponentField(acs, 'street_number', 'short_name');
+            const route = this.getGEOAddressComponentField(acs, 'route', 'long_name');
+            const locality = this.getGEOAddressComponentField(acs, 'locality', 'long_name');
+            const region = this.getGEOAddressComponentField(acs, 'administrative_area_level_1', 'short_name');
+            const postal_code = this.getGEOAddressComponentField(acs, 'postal_code', 'short_name');
+            const country = this.getGEOAddressComponentField(acs, 'country', 'short_name');
             console.log(street_number, route, locality, region, postal_code, country);
             if (this.props.onAddressChanged)
                 this.props.onAddressChanged(
@@ -63,6 +63,11 @@ class AddressForm extends Component {
                     return t === component;
                 });
         });
+    }
+
+    getGEOAddressComponentField(address_components, component, field) {
+        const c = this.getGEOAddressComponent(address_components, component);
+        return c ? c[field] : null;
     }
 
     handleAddressChange(e) {
