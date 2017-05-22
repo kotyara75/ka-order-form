@@ -67,7 +67,7 @@ class AddressForm extends Component {
 
     getGEOAddressComponentField(address_components, component, field) {
         const c = this.getGEOAddressComponent(address_components, component);
-        return c ? c[field] : null;
+        return c ? c[field] : '';
     }
 
     handleAddressChange(e) {
